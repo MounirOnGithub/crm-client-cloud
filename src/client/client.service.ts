@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 
 import { Client, ClientDocument } from './schemas/client.schema';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { PaginationQueryDto } from './dto/paginationquery-client.dto';
 
 @Injectable()
 export class ClientService {
@@ -19,18 +20,36 @@ export class ClientService {
   }
 
   findOne(id: string): Promise<Client> {
-    return this.clientModel
+    const client = this.clientModel
       .findById({
         _id: id,
       })
       .exec();
+
+    if (!client) throw new NotFoundException(`Client #${id} not found`);
+    return client;
   }
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
+  findAll(paginationQuery: PaginationQueryDto): Promise<Client[]> {
+    const { limit, offset } = paginationQuery;
+    return this.clientModel.find().skip(offset).limit(limit).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} client`;
+  update(id: string, updateClientDto: UpdateClientDto) {
+    const existingClient = this.clientModel
+      .findByIdAndUpdate({ _id: id }, updateClientDto)
+      .exec();
+
+    if (!existingClient) {
+      throw new NotFoundException(`Customer #${id} not found`);
+    }
+
+    return existingClient;
+  }
+
+  remove(id: string) {
+    const deletedClient = this.clientModel.findByIdAndDelete({ _id: id });
+
+    return deletedClient;
   }
 }

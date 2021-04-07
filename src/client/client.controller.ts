@@ -3,35 +3,90 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Res,
+  Query,
+  HttpStatus,
+  NotFoundException,
+  Put,
 } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { PaginationQueryDto } from './dto/paginationquery-client.dto';
 
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
   @Post()
-  create(@Body() createClientDto: CreateClientDto) {
-    return this.clientService.create(createClientDto);
+  create(@Res() res, @Body() createClientDto: CreateClientDto) {
+    try {
+      const client = this.clientService.create(createClientDto);
+      return res.status(HttpStatus.CREATED).json(client);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.clientService.findOne(id);
+    try {
+      const client = this.clientService.findOne(id);
+      if (!client) throw new NotFoundException('Client not existing');
+      return client;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
-    return this.clientService.update(+id, updateClientDto);
+  @Get()
+  findAll(@Res() res, @Query() paginationQuery: PaginationQueryDto) {
+    try {
+      const clients = this.clientService.findAll(paginationQuery);
+      return res.status(HttpStatus.OK).json(clients);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Put(':id')
+  update(
+    @Res() res,
+    @Param('id') id: string,
+    @Body() updateClientDto: UpdateClientDto,
+  ) {
+    try {
+      const client = this.clientService.update(id, updateClientDto);
+      if (!client) {
+        throw new NotFoundException('Client does not exist!');
+      }
+      return res.status(HttpStatus.OK).json({
+        message: 'Client has been successfully updated',
+        client,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: 'Error: Customer not updated!',
+        status: 400,
+      });
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.clientService.remove(+id);
+  remove(@Res() res, @Param('id') id: string) {
+    if (!id) {
+      throw new NotFoundException('Customer ID does not exist');
+    }
+    const client = this.clientService.remove(id);
+    if (!client) {
+      throw new NotFoundException('Customer does not exist');
+    }
+
+    return res.status(HttpStatus.NO_CONTENT).json({
+      message: 'Customer has been deleted',
+      client,
+    });
   }
 }
