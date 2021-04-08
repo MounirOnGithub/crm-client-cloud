@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
+import { Contact } from 'src/contacts/schemas/contact.schema';
 
 export type ClientDocument = Client & Document;
 
@@ -28,6 +30,9 @@ export class Client {
 
   @Prop({ required: true })
   type: string;
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Contact' }] })
+  contacts: Contact[];
 }
 
 export const ClientSchema = SchemaFactory.createForClass(Client);
