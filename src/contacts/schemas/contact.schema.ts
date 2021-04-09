@@ -1,25 +1,26 @@
+import { Document } from 'mongoose';
 import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
 
 export type ContactDocument = Contact & Document;
 
 @Schema()
 export class Contact {
-  @Prop()
+  @Prop({ required: true })
   firstName: string;
 
-  @Prop()
+  @Prop({ required: true })
   lastName: string;
 
   @Prop()
   phone: string;
 
-  @Prop()
+  @Prop({ required: true })
   email: string;
 
   @Prop()
   role: string;
 
-  @Prop()
+  @Prop({ required: true })
   contactDate: Date;
 }
 
