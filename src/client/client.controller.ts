@@ -77,15 +77,15 @@ export class ClientController {
   @Delete(':id')
   remove(@Res() res, @Param('id') id: string) {
     if (!id) {
-      throw new NotFoundException('Customer ID does not exist');
+      throw new NotFoundException('Client ID does not exist');
     }
     const client = this.clientService.remove(id);
     if (!client) {
-      throw new NotFoundException('Customer does not exist');
+      throw new NotFoundException('Client does not exist');
     }
 
     return res.status(HttpStatus.NO_CONTENT).json({
-      message: 'Customer has been deleted',
+      message: 'Client has been deleted',
       client,
     });
   }
